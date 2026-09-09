@@ -1,0 +1,12 @@
+# dsh-kaomoji bundle layer：把颜文字插件挂载进 profile。
+#
+# 纯 insert(id/name) 可热挂载；想改默认行为时，在自己的 profile
+# cordis.patch.yml 里用同一个 id 覆盖 config 即可，例如：
+#   - id: dsh-kaomoji
+#     config:
+#       mode: frequent        # off | auto | frequent
+#       placement: end        # inline | end
+#       maxPerTurn: 2
+- insert:
+    - id: dsh-kaomoji
+      name: dsh-kaomoji

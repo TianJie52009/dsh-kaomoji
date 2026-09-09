@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "name": "dsh-kaomoji-core@1",
+  "source": {
+    "name": "顔文字屋 (Kaomojiya)",
+    "url": "https://www.kaomojiya.org/",
+    "note": "本站页面声明：注册、收费均不需要，商用・非商用皆可自由使用。本目录是该站 3000+ 颜文字中的人工精选子集（以适合对话回复的纯颜文字为主），仅供 dsh-kaomoji 本地白名单使用。"
+  },
+  "categories": [
+    {
+      "id": "happy",
+      "labels": { "zh": "开心/高兴", "en": "happy" },
+      "sourceUrl": "https://www.kaomojiya.org/happy-kaomoji",
+      "examples": ["(´∀｀)", "(´∀｀*)", "( ◜ω◝ )", "＼(^o^)／", "(*´▽`*)"]
+    },
+    {
+      "id": "love",
+      "labels": { "zh": "喜欢/心动", "en": "love" },
+      "sourceUrl": "https://www.kaomojiya.org/love-kaomoji",
+      "examples": ["(♡´౪`♡)", "(●´ω｀●)♡", "( ˘ ³˘)♡", "(´∀｀)♡", "(｡♥‿♥｡)"]
+    },
+    {
+      "id": "sad",
+      "labels": { "zh": "难过/低落", "en": "sad" },
+      "sourceUrl": "https://www.kaomojiya.org/sad-kaomoji",
+      "examples": ["(´；ω；`)", "(´；ω；｀)", "(｡•́︿•̀｡)", "(〒﹏〒)", "(இωஇ)"]
+    },
+    {
+      "id": "cry",
+      "labels": { "zh": "大哭/泪目", "en": "cry" },
+      "sourceUrl": "https://www.kaomojiya.org/cry-kaomoji",
+      "examples": ["｡ﾟ(ﾟ´Д｀ﾟ)ﾟ｡", "(T_T)", "(ಥ_ಥ)", "(つд⊂)", "( ；∀；)"]
+    },
+    {
+      "id": "angry",
+      "labels": { "zh": "生气/不满", "en": "angry" },
+      "sourceUrl": "https://www.kaomojiya.org/angry-kaomoji",
+      "examples": ["(｀ε´)", "ヽ(`Д´)ﾉ", "(# ﾟДﾟ)", "( ｀_ゝ´)", "(¬˛¬ )", "( ･᷄ὢ･᷅ )"]
+    },
+    {
+      "id": "surprised",
+      "labels": { "zh": "惊讶/震惊", "en": "surprised" },
+      "sourceUrl": "https://www.kaomojiya.org/odoroiteru-kaomoji",
+      "examples": ["( °Д° )", "Σ(*ﾟдﾟ*)", "Σ(ﾟﾛﾟ;)", "（〇o〇）", "(๑°ㅁ°๑)"]
+    },
+    {
+      "id": "confused",
+      "labels": { "zh": "困惑/困扰", "en": "confused" },
+      "sourceUrl": "https://www.kaomojiya.org/komaru-kaomoji",
+      "examples": ["(´･-･`)", "(^_^;)", "(´･ω･`)", "( -᷄ω-᷅ )", "(｡ŏ﹏ŏ)", "╮( •́ω•̀ )╭"]
+    },
+    {
+      "id": "shy",
+      "labels": { "zh": "害羞/不好意思", "en": "shy" },
+      "sourceUrl": "https://www.kaomojiya.org/shy-kaomoji",
+      "examples": ["(〃ﾉдﾉ)", "(*ﾉωﾉ)", "(///ω///)", "(//∇//)", "(〃▽〃)"]
+    },
+    {
+      "id": "playful",
+      "labels": { "zh": "俏皮/卖萌", "en": "playful" },
+      "sourceUrl": "https://www.kaomojiya.org/shy-kaomoji",
+      "examples": ["(・ω<)", "(｡•ω<｡)", "(∩_∩)", "(〃´∀｀〃)"]
+    },
+    {
+      "id": "encourage",
+      "labels": { "zh": "鼓励/加油", "en": "encourage" },
+      "sourceUrl": "https://www.kaomojiya.org/hagemasu-kaomoji",
+      "examples": ["(•̀ω•́)✧", "(｡•̀ᴗ-)✧", "(๑•̀ㅂ•́)و✧", "(ง •̀_•́)ง", "(つω`｡)"]
+    },
+    {
+      "id": "thanks",
+      "labels": { "zh": "感谢", "en": "thanks" },
+      "sourceUrl": "https://www.kaomojiya.org/thanks-kaomoji",
+      "examples": ["(人´∀`)", "(*´▽`人)", "(*˘︶˘人)", "m(_ _)m", "⸜(*ˊᵕˋ*)⸝"]
+    },
+    {
+      "id": "sorry",
+      "labels": { "zh": "道歉", "en": "sorry" },
+      "sourceUrl": "https://www.kaomojiya.org/sorry-kaomoji",
+      "examples": ["(人'д`o)", "(´｡･д人)", "(｡-人-｡)", "m(_ _)m"]
+    }
+  ]
+}
