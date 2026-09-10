@@ -2,6 +2,10 @@
 
 > 给 [DeepSeek Harness](https://github.com/deepseek-ai)（dsh）的回复自动添加日式颜文字（kaomoji）。
 
+[![npm](https://img.shields.io/npm/v/dsh-kaomoji.svg)](https://www.npmjs.com/package/dsh-kaomoji)
+[![license](https://img.shields.io/github/license/TianJie52009/dsh-kaomoji.svg)](./LICENSE)
+[![node](https://img.shields.io/node/v/dsh-kaomoji.svg)](https://nodejs.org)
+
 > 🤖 **纯 Codex 生成**：本仓库的代码与文档均由 OpenAI Codex 自动生成，未经人工逐行审查。使用前请自行阅读并测试。
 
 `dsh-kaomoji` 是一个零第三方依赖的 dsh 插件：它在模型生成前向系统提示词注入一段「情绪 → 颜文字」白名单规则，让模型按回复情绪**原样复制**一个真实、可读的颜文字。精选词库来自日本最大的颜文字站之一 [顔文字屋 kaomojiya.org](https://www.kaomojiya.org/)。
@@ -55,16 +59,30 @@
 - Node.js `^22.19.0 || >=24.0.0`
 - pnpm 11（dsh 默认使用 pnpm）
 
-### 从本仓库安装（npm 发布前）
+### 方式一：从 GitHub 直装（现在就能用）
+
+无需等 npm 发布，dsh CLI 支持直接装 GitHub 仓库：
+
+```powershell
+dsh plugin --profile web add github:TianJie52009/dsh-kaomoji
+```
+
+等价的 pnpm 写法：
+
+```powershell
+cd "$env:USERPROFILE\.dsh\profiles\web"
+pnpm add github:TianJie52009/dsh-kaomoji
+```
+
+### 方式二：从 npm 安装（包发布后）
 
 ```powershell
 cd "$env:USERPROFILE\.dsh\profiles\web"
 
-# 方式一：dsh CLI（包发布到 npm 后；会自动把插件加入 dsh.profile.bundles）
+# dsh CLI 会自动把插件加入 dsh.profile.bundles
 dsh plugin --profile web add dsh-kaomoji
 
-# 方式二：pnpm 从本仓库安装（npm 发布前）
-# 先把仓库 clone/解压到本地，再把下面的路径换成该目录
+# 本地开发版：先把仓库 clone/解压到本地，再把路径换成该目录
 pnpm add file:C:\path\to\dsh-kaomoji
 ```
 
@@ -161,6 +179,17 @@ npm pack                          # 打包验证发布内容（会先跑 prepack
 ```powershell
 node -e "import('./lib/index.js').then((m) => console.log(m.buildGuidance({ mode: 'frequent', placement: 'end' })))"
 ```
+
+### 发布到 npm（维护者）
+
+`dsh plugin --profile web add dsh-kaomoji` 这种裸包名安装依赖 npm 上的正式发布。维护者首次发布前需要登录一次官方 registry（`registry.npmmirror.com` 是只读镜像，不能发布）：
+
+```powershell
+npm login --registry https://registry.npmjs.org
+npm publish --access public --registry https://registry.npmjs.org
+```
+
+`package.json` 已声明 `publishConfig.registry = https://registry.npmjs.org/`，发布后其他人即可直接使用上面的「方式二」。
 
 ## 兼容性
 

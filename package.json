@@ -35,6 +35,18 @@
     "emoji"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TianJie52009/dsh-kaomoji.git"
+  },
+  "homepage": "https://github.com/TianJie52009/dsh-kaomoji#readme",
+  "bugs": {
+    "url": "https://github.com/TianJie52009/dsh-kaomoji/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "engines": {
     "node": "^22.19.0 || >=24.0.0"
   },

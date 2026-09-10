@@ -2,6 +2,10 @@
 
 > Add Japanese kaomoji to [DeepSeek Harness](https://github.com/deepseek-ai) (dsh) replies.
 
+[![npm](https://img.shields.io/npm/v/dsh-kaomoji.svg)](https://www.npmjs.com/package/dsh-kaomoji)
+[![license](https://img.shields.io/github/license/TianJie52009/dsh-kaomoji.svg)](./LICENSE)
+[![node](https://img.shields.io/node/v/dsh-kaomoji.svg)](https://nodejs.org)
+
 > 🤖 **Pure Codex generation** — the code and docs in this repository were
 > generated entirely by OpenAI Codex and have not been human-reviewed. Please
 > read and test before use.
@@ -58,11 +62,13 @@ Node.js `^22.19.0 || >=24.0.0`, pnpm 11.
 ```powershell
 cd "$env:USERPROFILE\.dsh\profiles\web"
 
-# Option 1: dsh CLI (after publishing to npm; also updates dsh.profile.bundles)
+# Option A: install straight from GitHub (works today)
+dsh plugin --profile web add github:TianJie52009/dsh-kaomoji
+
+# Option B: install from npm (after the package is published)
 dsh plugin --profile web add dsh-kaomoji
 
-# Option 2: pnpm from this repository (before the npm release)
-# Clone/extract the repo locally, then point the path below at it
+# Local development build
 pnpm add file:C:\path\to\dsh-kaomoji
 ```
 
@@ -161,6 +167,20 @@ Inspect the injected guidance quickly:
 ```powershell
 node -e "import('./lib/index.js').then((m) => console.log(m.buildGuidance({ mode: 'frequent', placement: 'end' })))"
 ```
+
+### Publishing to npm (maintainers)
+
+The bare-name install (`dsh plugin --profile web add dsh-kaomoji`) requires a
+real npm release. `registry.npmmirror.com` is a read-only mirror and cannot
+publish, so log in to the official registry once:
+
+```powershell
+npm login --registry https://registry.npmjs.org
+npm publish --access public --registry https://registry.npmjs.org
+```
+
+`package.json` already pins `publishConfig.registry` to
+`https://registry.npmjs.org/`.
 
 ## Compatibility
 
