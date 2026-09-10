@@ -26,7 +26,7 @@ largest Japanese kaomoji sites.
   instead of inventing malformed faces.
 - **12 mood buckets** — happy, love, sad, cry, angry, surprised, confused,
   shy, playful, encourage, thanks, sorry.
-- **Three frequency modes** — `auto` (default; friendly/casual/empathetic replies get one), `frequent`, `off`.
+- **Three frequency modes** — `auto` (default; greetings, casual chat, recommendations and empathetic replies get one), `frequent`, `off`.
 - **Placement control** — `inline` after the mood-matching sentence (default)
   or `end` of the reply.
 - **Visual settings card** under Settings → General, saved live without a restart.
@@ -102,7 +102,7 @@ Example `cordis.patch.yml`:
 
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
-| `mode` | `'off' \| 'auto' \| 'frequent'` | `'auto'` | `off` disables; `auto` adds one to friendly/casual/empathetic replies; `frequent` adds one to every conversational reply (code-only/formal replies excluded) |
+| `mode` | `'off' \| 'auto' \| 'frequent'` | `'auto'` | `off` disables; `auto` adds one to greetings, casual chat, recommendations and empathetic replies; `frequent` adds one to every conversational reply (code-only/formal replies excluded) |
 | `placement` | `'inline' \| 'end'` | `'inline'` | Put the kaomoji after the best-matching sentence, or at the reply end |
 | `maxPerTurn` | `number` (1–5) | `1` | Max kaomoji per reply |
 | `customPrompt` | `string` | `''` | Extra style/scene guidance; cannot change mode, whitelist or limits |

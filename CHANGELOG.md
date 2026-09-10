@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-09-10
+
+### Changed
+
+- `auto` 模式的适用范围明确包含日常推荐、购物建议和实用 how-to 回答：这类
+  对话式回答同样会带一个颜文字，只有纯代码、正式技术交付和高风险内容跳过。
+
 ## [0.1.1] - 2026-09-10
 
 ### Added

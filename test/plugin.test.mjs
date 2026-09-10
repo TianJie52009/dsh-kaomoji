@@ -70,7 +70,7 @@ test("buildGuidance returns empty when mode is off", () => {
 test("buildGuidance covers mode, placement and whitelist", () => {
   const auto = buildGuidance({ mode: "auto" });
   assert.match(auto, /Kaomoji guidance/);
-  assert.match(auto, /Most friendly, casual, empathetic, or playful replies/);
+  assert.match(auto, /everyday recommendations or shopping advice/);
   assert.match(auto, /right after the sentence/);
   assert.match(auto, /Use at most 1 kaomoji/);
   assert.match(auto, /code blocks, inline code, links, tables/);
