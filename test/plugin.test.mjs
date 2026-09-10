@@ -70,7 +70,7 @@ test("buildGuidance returns empty when mode is off", () => {
 test("buildGuidance covers mode, placement and whitelist", () => {
   const auto = buildGuidance({ mode: "auto" });
   assert.match(auto, /Kaomoji guidance/);
-  assert.match(auto, /only when it genuinely improves/);
+  assert.match(auto, /Most friendly, casual, empathetic, or playful replies/);
   assert.match(auto, /right after the sentence/);
   assert.match(auto, /Use at most 1 kaomoji/);
   assert.match(auto, /code blocks, inline code, links, tables/);
@@ -94,6 +94,7 @@ test("customPrompt is appended without changing core rules", () => {
 
 test("apply registers exactly one system prompt section", () => {
   const sections = [];
+  let rpcOptions;
   const dir = mkdtempSync(join(tmpdir(), "dsh-kaomoji-test-"));
   const fakeCtx = {
     logger: { info() {} },
@@ -108,7 +109,23 @@ test("apply registers exactly one system prompt section", () => {
         return () => {};
       },
     },
-    inject() {},
+    inject(services, register) {
+      if (Array.isArray(services) && services.includes("connection")) {
+        register({
+          effect(callback) {
+            return callback();
+          },
+          connection: {
+            rpc: {
+              handle(_channel, _handler, options) {
+                rpcOptions = options;
+                return () => {};
+              },
+            },
+          },
+        });
+      }
+    },
   };
 
   try {
@@ -117,6 +134,8 @@ test("apply registers exactly one system prompt section", () => {
     assert.equal(sections[0].name, SECTION_NAME);
     assert.equal(sections[0].order, SECTION_ORDER);
     assert.match(sections[0].text(), /In every conversational reply/);
+    // 默认 trusted-host：本机与 Tailscale 这类受信主机都能保存设置。
+    assert.equal(rpcOptions.authority, "trusted-host");
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

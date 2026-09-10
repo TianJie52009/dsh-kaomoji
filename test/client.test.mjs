@@ -97,7 +97,8 @@ test("client settings store serializes optimistic writes over the rpc handle", a
       useEffect: () => {},
     };
   });
-  const store = loaded.createSettingsStore(rpc, true);
+  // 不传 loopback 提示：远程页面（Tailscale）也必须尝试读写，由 Host 决定信任与否。
+  const store = loaded.createSettingsStore(rpc);
   await store.refresh();
   assert.equal(store.getSnapshot().settings.mode, "auto");
   assert.equal(store.getSnapshot().status, "ready");
@@ -107,4 +108,42 @@ test("client settings store serializes optimistic writes over the rpc handle", a
   assert.equal(store.getSnapshot().settings.placement, "end");
   assert.equal(store.getSnapshot().justSaved, true);
   assert.deepEqual(calls, ["get", "save"]);
+});
+
+test("client settings store surfaces an untrusted origin as read-only", async () => {
+  const source = readFileSync(new URL("../lib/client.js", import.meta.url), "utf8");
+  let registered;
+  const context = {
+    window: {
+      __ModuleLoader__: {
+        load(entry) {
+          registered = entry;
+        },
+      },
+    },
+    console,
+    Symbol,
+    Object,
+  };
+  vm.createContext(context);
+  vm.runInContext(source, context, { filename: "lib/client.js" });
+
+  const loaded = registered.factory(() => ({
+    createElement: (...args) => ({ __kind: "element", args }),
+    useState: (value) => [value, () => {}],
+    useEffect: () => {},
+  }));
+  const store = loaded.createSettingsStore({
+    async call() {
+      return { ok: false, error: { code: "forbidden" } };
+    },
+  });
+  await store.refresh();
+  assert.equal(store.getSnapshot().status, "unavailable");
+  assert.equal(store.getSnapshot().writable, false);
+  assert.equal(store.getSnapshot().saveError, "forbidden");
+  // 不可写时 patch/reset 不应产生任何写入。
+  await store.patch({ mode: "frequent" });
+  await store.reset();
+  assert.equal(store.getSnapshot().settings.mode, "auto");
 });

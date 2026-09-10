@@ -26,7 +26,7 @@ largest Japanese kaomoji sites.
   instead of inventing malformed faces.
 - **12 mood buckets** — happy, love, sad, cry, angry, surprised, confused,
   shy, playful, encourage, thanks, sorry.
-- **Three frequency modes** — `auto` (default), `frequent`, `off`.
+- **Three frequency modes** — `auto` (default; friendly/casual/empathetic replies get one), `frequent`, `off`.
 - **Placement control** — `inline` after the mood-matching sentence (default)
   or `end` of the reply.
 - **Visual settings card** under Settings → General, saved live without a restart.
@@ -102,14 +102,24 @@ Example `cordis.patch.yml`:
 
 | Key | Type | Default | Description |
 | --- | --- | --- | --- |
-| `mode` | `'off' \| 'auto' \| 'frequent'` | `'auto'` | `off` disables; `auto` uses kaomoji only when helpful; `frequent` adds one to every conversational reply (code-only/formal replies excluded) |
+| `mode` | `'off' \| 'auto' \| 'frequent'` | `'auto'` | `off` disables; `auto` adds one to friendly/casual/empathetic replies; `frequent` adds one to every conversational reply (code-only/formal replies excluded) |
 | `placement` | `'inline' \| 'end'` | `'inline'` | Put the kaomoji after the best-matching sentence, or at the reply end |
 | `maxPerTurn` | `number` (1–5) | `1` | Max kaomoji per reply |
 | `customPrompt` | `string` | `''` | Extra style/scene guidance; cannot change mode, whitelist or limits |
 | `settingsFile` | `string` | `~/.dsh/dsh-kaomoji.json` | (advanced) user-settings file path |
+| `settingsAuthority` | `'trusted-host' \| 'loopback'` | `'trusted-host'` | Settings RPC trust scope: by default the local Host plus declared trusted hosts (Tailscale/LAN) may write; set `loopback` to restrict to the local machine |
 
 Card edits take effect immediately; deployment-default edits in
 `cordis.patch.yml` require a dsh restart.
+
+### Remote access (Tailscale / LAN)
+
+- If the dsh page is reachable remotely, the Host already trusts that origin;
+  with the default `settingsAuthority: trusted-host` the General card can save
+  settings from the remote session.
+- If the card reports that the origin is not trusted, add the host to the
+  server’s `trustedHosts` (dsh-client-connection) or temporarily switch to
+  `settingsAuthority: loopback` and edit on the server itself.
 
 ## Kaomoji library & attribution
 
@@ -196,6 +206,14 @@ npm publish --access public --registry https://registry.npmjs.org
 
 ## FAQ
 
+- **No kaomoji in replies?** Check, in order: (1) the Host half is mounted —
+  `dsh plugin --profile web add dsh-kaomoji` writes both `dependencies` and
+  `dsh.profile.bundles`; a bare `pnpm add` only loads the client card, so
+  re-install with the dsh CLI or add the `insert` row to `cordis.patch.yml`
+  and restart (the log should show `[dsh-kaomoji] 已挂载（mode=...）`);
+  (2) the mode — `auto` only fires on friendly/casual/empathetic replies, use
+  `frequent` for one per conversational reply; (3) the settings card status —
+  “Host not loaded” / “origin not trusted” also means the guidance is absent.
 - **Why does the model sometimes skip kaomoji in `auto` mode?** That is by
   design. Only `frequent` requires one per conversational reply.
 - **Can I use kaomoji outside the whitelist?** Yes — put the exact string in

@@ -17,7 +17,7 @@
 - **纯提示词方案**：不截断、不改写模型流，也不额外调用模型，稳定且对 KV 缓存友好。
 - **白名单防乱码**：模型只会从词库中逐字符复制颜文字，不会凭印象拼出坏字符。
 - **情绪分桶**：内置 12 个情绪分类（开心 / 心动 / 难过 / 大哭 / 生气 / 惊讶 / 困惑 / 害羞 / 俏皮 / 鼓励 / 感谢 / 道歉），并随规则给出可用样例。
-- **三种频率模式**：`auto`（智能点缀，默认）/ `frequent`（每条对话回复都带）/ `off`（关闭）。
+- **三种频率模式**：`auto`（智能：友好的寒暄/闲聊/共情回复都会带一个，默认）/ `frequent`（每条对话回复都带）/ `off`（关闭）。
 - **放置位置可选**：贴在情绪最贴切的句子后（`inline`，默认）或固定在回复末尾（`end`）。
 - **可视化配置卡片**：卡片位于「设置 → 通用设置」，保存即生效、无需重启。
 - **零第三方运行时依赖**：只用 dsh 自带的 `systemPrompt` 服务与 Node 标准库。
@@ -118,13 +118,19 @@ pnpm add file:C:\path\to\dsh-kaomoji
 
 | 配置项 | 类型 | 默认值 | 说明 |
 | --- | --- | --- | --- |
-| `mode` | `'off' \| 'auto' \| 'frequent'` | `'auto'` | `off` 关闭；`auto` 只在确有助益时使用；`frequent` 每条对话回复都带一个（纯代码 / 正式技术交付除外） |
+| `mode` | `'off' \| 'auto' \| 'frequent'` | `'auto'` | `off` 关闭；`auto` 友好的寒暄/闲聊/共情回复都会带一个；`frequent` 每条对话回复都带一个（两者都跳过纯代码 / 正式技术交付） |
 | `placement` | `'inline' \| 'end'` | `'inline'` | 放在情绪最贴切的句子/短段后，或固定在回复末尾 |
 | `maxPerTurn` | `number`（1–5） | `1` | 每条回复最多允许的颜文字数量 |
 | `customPrompt` | `string` | `''` | 附加风格/场景说明；不能改变模式、白名单或数量上限 |
 | `settingsFile` | `string` | `~/.dsh/dsh-kaomoji.json` | （进阶）用户设置持久化文件路径 |
+| `settingsAuthority` | `'trusted-host' \| 'loopback'` | `'trusted-host'` | 设置 RPC 信任范围：默认允许本机与 Host 声明的受信主机（Tailscale/局域网）保存设置；改成 `loopback` 则仅本机可改 |
 
 卡片里的修改即时写入用户层并热生效；修改 `cordis.patch.yml` 的部署默认值后需重启 dsh。
+
+### 远程访问（Tailscale / 局域网）
+
+- 只要能正常远程打开 dsh 页面，说明 Host 已信任该来源；默认 `settingsAuthority: trusted-host` 下，通用设置卡片可以直接修改并保存。
+- 如果卡片提示「当前来源不在 Host 的信任列表里」，说明服务端 `@deepseek-ai/dsh-client-connection` 没有把该域名/IP 加进 `trustedHosts`；先在服务端配置受信主机，或临时改用 `settingsAuthority: loopback` 并到服务器本机编辑。
 
 ## 词库来源与许可
 
@@ -204,6 +210,22 @@ npm publish --access public --registry https://registry.npmjs.org
 - 与 [dsh-emoji](https://github.com/hellodigua/dsh-emoji) 可共存：提示词段名/排序不同（`dsh-emoji:guidance` @175 vs `dsh-kaomoji:guidance` @176），设置命名空间、RPC 通道、卡片槽位（插件页 vs 通用设置）均无冲突；颜文字是纯文本，dsh-emoji 的流转写只处理规范 Unicode emoji，不会互相改写。
 
 ## FAQ
+
+### 回答里没有颜文字？
+
+按顺序检查：
+
+1. **Host 半是否真的挂载了**：`dsh plugin --profile web add dsh-kaomoji` 会把插件同时写进 `dependencies` 和 `dsh.profile.bundles`；如果只用 `pnpm add` 手动装，client 卡片会出现但 Host 不会注入提示词。重新用 dsh CLI 安装一次，或在 profile 的 `cordis.patch.yml` 里补：
+
+   ```yaml
+   - insert:
+       - id: dsh-kaomoji
+         name: dsh-kaomoji
+   ```
+
+   然后重启 dsh，日志里应出现 `[dsh-kaomoji] 已挂载（mode=...）`。
+2. **确认模式**：默认 `auto` 只在友好/闲聊/共情等场景使用；想要每条对话回复都带，在通用设置卡片切到「高频」，或在 `cordis.patch.yml` 写 `mode: frequent`。
+3. **看设置卡片状态**：卡片提示「Host 未加载」或「来源不受信任」时，提示词也不会注入，先按上面的步骤修好挂载/信任。
 
 ### 为什么模型偶尔没有加颜文字？
 

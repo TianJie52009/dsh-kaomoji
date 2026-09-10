@@ -1,6 +1,6 @@
 {
   "name": "dsh-kaomoji",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Add mood-aware Japanese kaomoji to DeepSeek Harness (dsh) replies; prompt-injection plugin with a curated library from kaomojiya.org.",
   "type": "module",
   "main": "lib/index.js",

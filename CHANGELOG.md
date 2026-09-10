@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-09-10
+
+### Added
+
+- 设置 RPC 默认信任范围改为 `trusted-host`：本机与 Host 声明的受信主机（如 Tailscale
+  组网的服务器）都能保存设置；可用 `settingsAuthority: loopback` 收紧回仅本机。
+- 设置卡片会显示 RPC 失败原因（来源不受信任 / Host 未加载 / 保存失败），不再静默只读。
+- `auto` 模式改为更积极地输出颜文字：友好的寒暄、闲聊、共情类回复都会带一个。
+
+### Fixed
+
+- 远程（Tailscale / 局域网）页面打开设置卡片时只能看、不能改的问题。
+
 ## [0.1.0] - 2026-09-09
 
 ### Added
