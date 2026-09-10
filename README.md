@@ -59,7 +59,18 @@
 - Node.js `^22.19.0 || >=24.0.0`
 - pnpm 11（dsh 默认使用 pnpm）
 
-### 方式一：从 GitHub 直装（现在就能用）
+### 方式一：从 npm 安装（推荐）
+
+包已发布到 npm，直接安装即可，dsh CLI 会自动把插件加入 `dsh.profile.bundles`：
+
+```powershell
+cd "$env:USERPROFILE\.dsh\profiles\web"
+dsh plugin --profile web add dsh-kaomoji
+```
+
+> 包刚发布的 24 小时内，如果对方的 pnpm 开启了「新包安全期」，裸名安装可能暂时解析不到；这种情况可先用下面的 GitHub 方式安装。
+
+### 方式二：从 GitHub 直装（无需等 npm）
 
 无需等 npm 发布，dsh CLI 支持直接装 GitHub 仓库：
 
@@ -74,15 +85,10 @@ cd "$env:USERPROFILE\.dsh\profiles\web"
 pnpm add github:TianJie52009/dsh-kaomoji
 ```
 
-### 方式二：从 npm 安装（包发布后）
+### 方式三：本地开发版
 
 ```powershell
-cd "$env:USERPROFILE\.dsh\profiles\web"
-
-# dsh CLI 会自动把插件加入 dsh.profile.bundles
-dsh plugin --profile web add dsh-kaomoji
-
-# 本地开发版：先把仓库 clone/解压到本地，再把路径换成该目录
+# 先把仓库 clone/解压到本地，再把路径换成该目录
 pnpm add file:C:\path\to\dsh-kaomoji
 ```
 

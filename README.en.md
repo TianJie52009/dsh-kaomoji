@@ -62,11 +62,11 @@ Node.js `^22.19.0 || >=24.0.0`, pnpm 11.
 ```powershell
 cd "$env:USERPROFILE\.dsh\profiles\web"
 
-# Option A: install straight from GitHub (works today)
-dsh plugin --profile web add github:TianJie52009/dsh-kaomoji
-
-# Option B: install from npm (after the package is published)
+# Option A: install from npm (recommended)
 dsh plugin --profile web add dsh-kaomoji
+
+# Option B: install straight from GitHub (no npm release needed)
+dsh plugin --profile web add github:TianJie52009/dsh-kaomoji
 
 # Local development build
 pnpm add file:C:\path\to\dsh-kaomoji
