@@ -120,7 +120,7 @@ pnpm add file:C:\path\to\dsh-kaomoji
 | --- | --- | --- | --- |
 | `mode` | `'off' \| 'auto' \| 'frequent'` | `'auto'` | `off` 关闭；`auto` 寒暄/闲聊/推荐建议/共情回复都会带一个；`frequent` 每条对话回复都带一个（两者都跳过纯代码 / 正式技术交付） |
 | `placement` | `'inline' \| 'end'` | `'inline'` | 放在情绪最贴切的句子/短段后，或固定在回复末尾 |
-| `maxPerTurn` | `number`（1–5） | `1` | 每条回复最多允许的颜文字数量 |
+| `maxPerTurn` | `number`（1–5） | `1` | 每条回复的颜文字数量上限；`frequent` 会按这个数量分散放在不同句子后，回复太短时自动减少 |
 | `customPrompt` | `string` | `''` | 附加风格/场景说明；不能改变模式、白名单或数量上限 |
 | `settingsFile` | `string` | `~/.dsh/dsh-kaomoji.json` | （进阶）用户设置持久化文件路径 |
 | `settingsAuthority` | `'trusted-host' \| 'loopback'` | `'trusted-host'` | 设置 RPC 信任范围：默认允许本机与 Host 声明的受信主机（Tailscale/局域网）保存设置；改成 `loopback` 则仅本机可改 |

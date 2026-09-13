@@ -72,7 +72,7 @@ test("buildGuidance covers mode, placement and whitelist", () => {
   assert.match(auto, /Kaomoji guidance/);
   assert.match(auto, /everyday recommendations or shopping advice/);
   assert.match(auto, /right after the sentence/);
-  assert.match(auto, /Use at most 1 kaomoji/);
+  assert.match(auto, /Never exceed 1 kaomoji/);
   assert.match(auto, /code blocks, inline code, links, tables/);
   for (const group of CATALOG) {
     assert.ok(auto.includes(group.examples[0]), `missing example of ${group.id}`);
@@ -81,6 +81,11 @@ test("buildGuidance covers mode, placement and whitelist", () => {
   const frequent = buildGuidance({ mode: "frequent", placement: "end" });
   assert.match(frequent, /In every conversational reply/);
   assert.match(frequent, /at the very end of the reply/);
+
+  const multi = buildGuidance({ mode: "frequent", maxPerTurn: 3 });
+  assert.match(multi, /Use 3 kaomoji, one after each of 3 different emotion-carrying sentences/);
+  assert.match(multi, /Distribute the kaomoji across the reply/);
+  assert.match(multi, /Never exceed 3 kaomoji/);
 });
 
 test("customPrompt is appended without changing core rules", () => {

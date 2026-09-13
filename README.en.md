@@ -104,7 +104,7 @@ Example `cordis.patch.yml`:
 | --- | --- | --- | --- |
 | `mode` | `'off' \| 'auto' \| 'frequent'` | `'auto'` | `off` disables; `auto` adds one to greetings, casual chat, recommendations and empathetic replies; `frequent` adds one to every conversational reply (code-only/formal replies excluded) |
 | `placement` | `'inline' \| 'end'` | `'inline'` | Put the kaomoji after the best-matching sentence, or at the reply end |
-| `maxPerTurn` | `number` (1–5) | `1` | Max kaomoji per reply |
+| `maxPerTurn` | `number` (1–5) | `1` | Max kaomoji per reply; `frequent` distributes that many across different sentences (fewer in very short replies) |
 | `customPrompt` | `string` | `''` | Extra style/scene guidance; cannot change mode, whitelist or limits |
 | `settingsFile` | `string` | `~/.dsh/dsh-kaomoji.json` | (advanced) user-settings file path |
 | `settingsAuthority` | `'trusted-host' \| 'loopback'` | `'trusted-host'` | Settings RPC trust scope: by default the local Host plus declared trusted hosts (Tailscale/LAN) may write; set `loopback` to restrict to the local machine |

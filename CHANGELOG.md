@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-09-13
+
+### Fixed
+
+- `maxPerTurn` 之前对输出没有实际约束力：提示词写死「一个」，调到 2/3 也不会变。
+  现在 `frequent` 会按该上限在回复里分散放置多个颜文字，`auto` 在存在多个
+  情绪点时也会用到上限；回复很短时自动少放。
+
 ## [0.1.2] - 2026-09-10
 
 ### Changed
