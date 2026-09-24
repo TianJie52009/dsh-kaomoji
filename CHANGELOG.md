@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-09-25
+
+### Changed
+
+- 设置卡片在保存失败时直接显示 Host 返回的真实原因（例如文件不可写、来源不受信任），
+  不再只显示通用的“保存失败”，便于定位服务器端问题。
+
 ## [0.1.3] - 2026-09-13
 
 ### Fixed

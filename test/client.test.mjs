@@ -135,13 +135,14 @@ test("client settings store surfaces an untrusted origin as read-only", async ()
   }));
   const store = loaded.createSettingsStore({
     async call() {
-      return { ok: false, error: { code: "forbidden" } };
+      return { ok: false, error: { code: "forbidden", message: "forbidden origin" } };
     },
   });
   await store.refresh();
   assert.equal(store.getSnapshot().status, "unavailable");
   assert.equal(store.getSnapshot().writable, false);
   assert.equal(store.getSnapshot().saveError, "forbidden");
+  assert.equal(store.getSnapshot().saveErrorMessage, "forbidden origin");
   // 不可写时 patch/reset 不应产生任何写入。
   await store.patch({ mode: "frequent" });
   await store.reset();
