@@ -36,7 +36,7 @@ test("client bundle loads through the dsh ModuleLoader format", () => {
   });
   assert.equal(loaded.apply, loaded.apply);
   assert.equal(typeof loaded.apply, "function");
-  assert.deepEqual(Array.from(loaded.inject), ["slots", "locale", "connection"]);
+  assert.deepEqual(Array.from(loaded.inject), ["slots", "locale"]);
   assert.equal(loaded.RPC_CHANNEL, "/dsh-kaomoji-settings");
   assert.equal(typeof loaded.createSettingsStore, "function");
 });
@@ -61,33 +61,33 @@ test("client settings store serializes optimistic writes over the rpc handle", a
 
   let revision = 0;
   const calls = [];
-  const rpc = {
-    async call(channel, endpoint, payload) {
-      assert.equal(channel, "/dsh-kaomoji-settings");
+  const fetchImpl = async (url, init) => {
+      assert.equal(url, "/dsh-kaomoji-settings");
+      assert.equal(init.method, "POST");
+      const { endpoint, payload } = JSON.parse(init.body);
       calls.push(endpoint);
       if (endpoint === "get") {
-        return {
+        return { status: 200, json: async () => ({
           ok: true,
           value: {
             settings: { mode: "auto", placement: "inline", maxPerTurn: 1, customPrompt: "" },
             revision,
             writable: true,
           },
-        };
+        }) };
       }
       if (endpoint === "save") {
         revision += 1;
-        return {
+        return { status: 200, json: async () => ({
           ok: true,
           value: {
             settings: payload.settings,
             revision,
             writable: true,
           },
-        };
+        }) };
       }
       throw new Error("unexpected endpoint");
-    },
   };
   const loaded = registered.factory((name) => {
     assert.equal(name, "react");
@@ -97,8 +97,7 @@ test("client settings store serializes optimistic writes over the rpc handle", a
       useEffect: () => {},
     };
   });
-  // 不传 loopback 提示：远程页面（Tailscale）也必须尝试读写，由 Host 决定信任与否。
-  const store = loaded.createSettingsStore(rpc);
+  const store = loaded.createSettingsStore(fetchImpl);
   await store.refresh();
   assert.equal(store.getSnapshot().settings.mode, "auto");
   assert.equal(store.getSnapshot().status, "ready");
@@ -133,11 +132,10 @@ test("client settings store surfaces an untrusted origin as read-only", async ()
     useState: (value) => [value, () => {}],
     useEffect: () => {},
   }));
-  const store = loaded.createSettingsStore({
-    async call() {
-      return { ok: false, error: { code: "forbidden", message: "forbidden origin" } };
-    },
-  });
+  const store = loaded.createSettingsStore(async () => ({
+    status: 403,
+    json: async () => ({ ok: false, error: { code: "forbidden", message: "forbidden origin" } }),
+  }));
   await store.refresh();
   assert.equal(store.getSnapshot().status, "unavailable");
   assert.equal(store.getSnapshot().writable, false);

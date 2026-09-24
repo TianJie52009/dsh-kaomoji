@@ -31,7 +31,7 @@
    - 用户附加的 `customPrompt`（可选）。
 3. 模型生成时在合适位置直接输出列表内的颜文字——因为它只是普通文本，聊天界面无需任何自定义渲染即可显示。
 
-设置部分走独立的 loopback RPC（`/dsh-kaomoji-settings`）：
+设置部分由插件在 webServer 上注册同源路由 `POST /dsh-kaomoji-settings`：
 
 1. 「设置 → 通用设置」的卡片读取/写入 `~/.dsh/dsh-kaomoji.json`；
 2. Host 收到写入后立刻更新提示词段并发出 `system-prompt/change`，**下一次回复就生效**，不需要重启。
@@ -123,14 +123,12 @@ pnpm add file:C:\path\to\dsh-kaomoji
 | `maxPerTurn` | `number`（1–5） | `1` | 每条回复的颜文字数量上限；`frequent` 会按这个数量分散放在不同句子后，回复太短时自动减少 |
 | `customPrompt` | `string` | `''` | 附加风格/场景说明；不能改变模式、白名单或数量上限 |
 | `settingsFile` | `string` | `~/.dsh/dsh-kaomoji.json` | （进阶）用户设置持久化文件路径 |
-| `settingsAuthority` | `'trusted-host' \| 'loopback'` | `'trusted-host'` | 设置 RPC 信任范围：默认允许本机与 Host 声明的受信主机（Tailscale/局域网）保存设置；改成 `loopback` 则仅本机可改 |
-
 卡片里的修改即时写入用户层并热生效；修改 `cordis.patch.yml` 的部署默认值后需重启 dsh。
 
 ### 远程访问（Tailscale / 局域网）
 
-- 只要能正常远程打开 dsh 页面，说明 Host 已信任该来源；默认 `settingsAuthority: trusted-host` 下，通用设置卡片可以直接修改并保存。
-- 如果卡片提示「当前来源不在 Host 的信任列表里」，说明服务端 `@deepseek-ai/dsh-client-connection` 没有把该域名/IP 加进 `trustedHosts`；先在服务端配置受信主机，或临时改用 `settingsAuthority: loopback` 并到服务器本机编辑。
+- 设置路由和页面同源（`POST /dsh-kaomoji-settings`），所以 Tailscale、局域网或 SSH 端口转发打开的页面都能直接改设置，不需要配置 `trustedHosts`。
+- 唯一要求是页面能访问该 Host 的 HTTP 端口；如果卡片报错，看提示里的具体原因（0.1.4+ 会显示服务端原始错误）。
 
 ## 词库来源与许可
 

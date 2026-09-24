@@ -44,7 +44,7 @@ largest Japanese kaomoji sites.
 3. The model emits one of the listed kaomoji where it fits. Because kaomoji
    are plain text, no custom rendering is needed in the chat UI.
 
-Settings use a dedicated loopback RPC channel (`/dsh-kaomoji-settings`):
+Settings use a same-origin route registered on the web server (`POST /dsh-kaomoji-settings`):
 
 1. The Settings → General card reads/writes `~/.dsh/dsh-kaomoji.json`.
 2. The Host updates the prompt section and emits `system-prompt/change`
@@ -107,19 +107,16 @@ Example `cordis.patch.yml`:
 | `maxPerTurn` | `number` (1–5) | `1` | Max kaomoji per reply; `frequent` distributes that many across different sentences (fewer in very short replies) |
 | `customPrompt` | `string` | `''` | Extra style/scene guidance; cannot change mode, whitelist or limits |
 | `settingsFile` | `string` | `~/.dsh/dsh-kaomoji.json` | (advanced) user-settings file path |
-| `settingsAuthority` | `'trusted-host' \| 'loopback'` | `'trusted-host'` | Settings RPC trust scope: by default the local Host plus declared trusted hosts (Tailscale/LAN) may write; set `loopback` to restrict to the local machine |
-
 Card edits take effect immediately; deployment-default edits in
 `cordis.patch.yml` require a dsh restart.
 
 ### Remote access (Tailscale / LAN)
 
-- If the dsh page is reachable remotely, the Host already trusts that origin;
-  with the default `settingsAuthority: trusted-host` the General card can save
-  settings from the remote session.
-- If the card reports that the origin is not trusted, add the host to the
-  server’s `trustedHosts` (dsh-client-connection) or temporarily switch to
-  `settingsAuthority: loopback` and edit on the server itself.
+- The settings route is same-origin with the page (`POST /dsh-kaomoji-settings`),
+  so pages opened over Tailscale, LAN or an SSH tunnel can all save settings —
+  no `trustedHosts` configuration needed.
+- The only requirement is that the page can reach that Host's HTTP port; any
+  failure now shows the server's original error in the card (0.1.4+).
 
 ## Kaomoji library & attribution
 

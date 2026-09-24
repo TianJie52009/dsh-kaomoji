@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-09-25
+
+### Fixed
+
+- 设置通道从 `connection.rpc` 改为插件自有的 `webServer` 路由
+  （`POST /dsh-kaomoji-settings`）。部分部署里 `connection` 服务不会进入插件
+  作用域，通道永远注册不上，浏览器侧只看到 `HTTP 405`，设置卡片因此无法保存。
+
 ## [0.1.4] - 2026-09-25
 
 ### Changed

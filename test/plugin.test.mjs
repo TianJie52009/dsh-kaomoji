@@ -97,9 +97,68 @@ test("customPrompt is appended without changing core rules", () => {
   assert.match(guidance, /cannot change the mode, the whitelist, or the per-reply limit/);
 });
 
+/** Minimal host ctx: captures the settings route and the prompt section. */
+function makeHostCtx() {
+  let route;
+  let section;
+  const ctx = {
+    emit() {},
+    effect(register) {
+      return register();
+    },
+    get() {
+      return undefined;
+    },
+    systemPrompt: {
+      section(value) {
+        section = value;
+        return () => {};
+      },
+    },
+    inject(services, register) {
+      if (Array.isArray(services) && services.includes("webServer")) {
+        register({
+          effect(callback) {
+            return callback();
+          },
+          webServer: {
+            register(value) {
+              route = value;
+              return () => {};
+            },
+          },
+        });
+      }
+    },
+  };
+  return { ctx, route: () => route, section: () => section };
+}
+
+/** Drive one POST through the captured settings route. */
+async function postSettings(route, body) {
+  const request = {
+    method: "POST",
+    async *[Symbol.asyncIterator]() {
+      yield Buffer.from(JSON.stringify(body));
+    },
+  };
+  let status;
+  let payload;
+  const response = {
+    writeHead(code) {
+      status = code;
+    },
+    end(text) {
+      payload = JSON.parse(text);
+    },
+  };
+  await route.handler(request, response);
+  return { status, payload };
+}
+
 test("apply registers exactly one system prompt section", () => {
   const sections = [];
-  let rpcOptions;
+  let route;
   const dir = mkdtempSync(join(tmpdir(), "dsh-kaomoji-test-"));
   const fakeCtx = {
     logger: { info() {} },
@@ -115,17 +174,15 @@ test("apply registers exactly one system prompt section", () => {
       },
     },
     inject(services, register) {
-      if (Array.isArray(services) && services.includes("connection")) {
+      if (Array.isArray(services) && services.includes("webServer")) {
         register({
           effect(callback) {
             return callback();
           },
-          connection: {
-            rpc: {
-              handle(_channel, _handler, options) {
-                rpcOptions = options;
-                return () => {};
-              },
+          webServer: {
+            register(value) {
+              route = value;
+              return () => {};
             },
           },
         });
@@ -139,8 +196,8 @@ test("apply registers exactly one system prompt section", () => {
     assert.equal(sections[0].name, SECTION_NAME);
     assert.equal(sections[0].order, SECTION_ORDER);
     assert.match(sections[0].text(), /In every conversational reply/);
-    // 默认 trusted-host：本机与 Tailscale 这类受信主机都能保存设置。
-    assert.equal(rpcOptions.authority, "trusted-host");
+    assert.equal(route.kind, "exact");
+    assert.equal(route.path, SETTINGS_RPC_CHANNEL);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -148,55 +205,26 @@ test("apply registers exactly one system prompt section", () => {
 
 test("mode off registers an empty section but keeps the settings RPC alive", async () => {
   const dir = mkdtempSync(join(tmpdir(), "dsh-kaomoji-test-"));
-  let section;
-  let handler;
-  const fakeCtx = {
-    logger: { info() {}, warn() {} },
-    emit() {},
-    effect(register) {
-      return register();
-    },
-    systemPrompt: {
-      section(value) {
-        section = value;
-        return () => {};
-      },
-    },
-    inject(services, register) {
-      if (Array.isArray(services) && services.includes("connection")) {
-        const connectionCtx = {
-          effect(callback) {
-            return callback();
-          },
-          connection: {
-            rpc: {
-              handle(channel, value) {
-                assert.equal(channel, SETTINGS_RPC_CHANNEL);
-                handler = value;
-                return () => {};
-              },
-            },
-          },
-        };
-        register(connectionCtx);
-      }
-    },
-  };
+  const host = makeHostCtx();
 
   try {
-    apply(fakeCtx, { mode: "off", settingsFile: join(dir, "state.json") });
+    apply(host.ctx, { mode: "off", settingsFile: join(dir, "state.json") });
+    const section = host.section();
     assert.ok(section);
     assert.equal(section.text(), "");
-    assert.equal(typeof handler, "function");
+    assert.equal(host.route().path, SETTINGS_RPC_CHANNEL);
 
     // 卡片可以在不重启的情况下把插件从 off 切回 frequent。
-    const initial = await handler("get", {});
-    assert.equal(initial.ok, true);
-    const saved = await handler("save", {
-      settings: { mode: "frequent", placement: "end", maxPerTurn: 1, customPrompt: "" },
-      expectedRevision: initial.value.revision,
+    const initial = await postSettings(host.route(), { endpoint: "get", payload: {} });
+    assert.equal(initial.payload.ok, true);
+    const saved = await postSettings(host.route(), {
+      endpoint: "save",
+      payload: {
+        settings: { mode: "frequent", placement: "end", maxPerTurn: 1, customPrompt: "" },
+        expectedRevision: initial.payload.value.revision,
+      },
     });
-    assert.equal(saved.ok, true);
+    assert.equal(saved.payload.ok, true);
     assert.match(section.text(), /In every conversational reply/);
     assert.match(section.text(), /at the very end of the reply/);
   } finally {
@@ -206,59 +234,36 @@ test("mode off registers an empty section but keeps the settings RPC alive", asy
 
 test("settings RPC rejects stale revisions and accepts reset", async () => {
   const dir = mkdtempSync(join(tmpdir(), "dsh-kaomoji-test-"));
-  let handler;
-  const fakeCtx = {
-    logger: { info() {}, warn() {} },
-    emit() {},
-    effect(register) {
-      return register();
-    },
-    systemPrompt: {
-      section() {
-        return () => {};
-      },
-    },
-    inject(services, register) {
-      if (Array.isArray(services) && services.includes("connection")) {
-        const connectionCtx = {
-          effect(callback) {
-            return callback();
-          },
-          connection: {
-            rpc: {
-              handle(_channel, value) {
-                handler = value;
-                return () => {};
-              },
-            },
-          },
-        };
-        register(connectionCtx);
-      }
-    },
-  };
+  const host = makeHostCtx();
 
   try {
-    apply(fakeCtx, { mode: "auto", settingsFile: join(dir, "state.json") });
-    const before = await handler("get", {});
-    const stale = await handler("save", {
-      settings: { mode: "frequent", placement: "end", maxPerTurn: 2, customPrompt: "" },
-      expectedRevision: before.value.revision + 9,
-    });
+    apply(host.ctx, { mode: "auto", settingsFile: join(dir, "state.json") });
+    const before = (await postSettings(host.route(), { endpoint: "get", payload: {} })).payload;
+    const stale = (await postSettings(host.route(), {
+      endpoint: "save",
+      payload: {
+        settings: { mode: "frequent", placement: "end", maxPerTurn: 2, customPrompt: "" },
+        expectedRevision: before.value.revision + 9,
+      },
+    })).payload;
     assert.equal(stale.ok, false);
     assert.equal(stale.error.code, "settings-conflict");
 
-    const saved = await handler("save", {
-      settings: { mode: "frequent", placement: "end", maxPerTurn: 2, customPrompt: "少卖萌" },
-      expectedRevision: before.value.revision,
-    });
+    const saved = (await postSettings(host.route(), {
+      endpoint: "save",
+      payload: {
+        settings: { mode: "frequent", placement: "end", maxPerTurn: 2, customPrompt: "少卖萌" },
+        expectedRevision: before.value.revision,
+      },
+    })).payload;
     assert.equal(saved.ok, true);
     assert.equal(saved.value.settings.mode, "frequent");
     assert.equal(saved.value.settings.customPrompt, "少卖萌");
 
-    const reset = await handler("reset", {
-      expectedRevision: saved.value.revision,
-    });
+    const reset = (await postSettings(host.route(), {
+      endpoint: "reset",
+      payload: { expectedRevision: saved.value.revision },
+    })).payload;
     assert.equal(reset.ok, true);
     assert.equal(reset.value.settings.mode, "auto");
     assert.equal(reset.value.settings.customPrompt, "");
