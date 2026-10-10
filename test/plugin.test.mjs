@@ -271,3 +271,33 @@ test("settings RPC rejects stale revisions and accepts reset", async () => {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("manifest declares 0.2-era dsh peers and no removed packages", () => {
+  const pkg = JSON.parse(
+    readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+  );
+  const peers = pkg.peerDependencies ?? {};
+  for (const [peerName, range] of Object.entries(peers)) {
+    assert.ok(
+      !peerName.includes("dsh-client-runtime"),
+      `${peerName} was removed from dsh 0.2 and must not be declared`,
+    );
+    if (peerName.startsWith("@deepseek-ai/dsh-")) {
+      // dsh 0.2 启动时会用运行时版本校验这些范围（includePrerelease）；
+      // 0.1.x 与 0.2.x 两条运行时线都必须能加载。
+      assert.ok(range.includes("^0.2.0-rc.2"), `${peerName} must accept dsh 0.2`);
+      assert.ok(range.includes("^0.1.0-rc.7"), `${peerName} must keep dsh 0.1 support`);
+    }
+  }
+  const inject = pkg.dsh?.client?.inject ?? [];
+  assert.ok(inject.length > 0, "client inject list must not be empty");
+  for (const injected of inject) {
+    assert.ok(
+      !injected.includes("dsh-client-runtime"),
+      `${injected} was removed from dsh 0.2 and must not be injected`,
+    );
+    assert.ok(peers[injected], `dsh.client.inject entry ${injected} must be a declared peer`);
+  }
+  assert.equal(pkg.dsh?.manifestVersion, 1);
+  assert.equal(pkg.engines?.dsh, "^0.2.0-rc.2 || ^0.1.0-rc.7");
+});

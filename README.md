@@ -20,7 +20,7 @@
 - **三种频率模式**：`auto`（智能：寒暄/闲聊/推荐建议/共情回复都会带一个，默认）/ `frequent`（每条对话回复都带）/ `off`（关闭）。
 - **放置位置可选**：贴在情绪最贴切的句子后（`inline`，默认）或固定在回复末尾（`end`）。
 - **可视化配置卡片**：卡片位于「设置 → 通用设置」，保存即生效、无需重启。
-- **零第三方运行时依赖**：只用 dsh 自带的 `systemPrompt` 服务与 Node 标准库。
+- **零第三方运行时依赖**：只用 dsh 自带的 `systemPrompt` / `webServer` 服务与 Node 标准库。
 
 ## 工作原理
 
@@ -192,19 +192,31 @@ node -e "import('./lib/index.js').then((m) => console.log(m.buildGuidance({ mode
 
 ### 发布到 npm（维护者）
 
-`dsh plugin --profile web add dsh-kaomoji` 这种裸包名安装依赖 npm 上的正式发布。维护者首次发布前需要登录一次官方 registry（`registry.npmmirror.com` 是只读镜像，不能发布）：
+`dsh plugin --profile web add dsh-kaomoji` 这种裸包名安装依赖 npm 上的正式发布。
+仓库根目录有一键发布脚本 `publish.cmd`（双击，或在终端里执行）：
 
 ```powershell
-npm login --registry https://registry.npmjs.org
-npm publish --access public --registry https://registry.npmjs.org
+.\publish.cmd            # 用 package.json 里的当前版本号直接发布
+.\publish.cmd patch      # 先 npm version patch（minor / major 同理），再发布
 ```
 
-`package.json` 已声明 `publishConfig.registry = https://registry.npmjs.org/`，发布后其他人即可直接使用上面的「方式二」。
+脚本依次做四件事：`npm test` → 检查 npm 登录（未登录会提示先执行
+`npm login --registry https://registry.npmjs.org`）→ 可选地 bump 版本号 →
+`npm publish --registry https://registry.npmjs.org`（`prepack` 会再跑一遍测试）。
+发布完成后记得把版本号改动 commit + push 回 GitHub。
+
+`package.json` 已声明 `publishConfig.registry = https://registry.npmjs.org/`，
+发布后其他人即可直接使用上面的「方式二」。
 
 ## 兼容性
 
-- 面向 npm `@deepseek-ai/dsh` rc.7 系运行时；
-- peer 依赖：`@deepseek-ai/cordis`、`@deepseek-ai/dsh-system-prompt`（均为可选声明，由 Web Profile 提供共享运行时）；
+- 同时适配 dsh `0.1.x` 与 `0.2.x`：所有 `@deepseek-ai/dsh-*` peer 声明为
+  `^0.2.0-rc.2 || ^0.1.0-rc.7`（可选 peer，由 Web Profile 提供共享运行时）。
+- dsh 0.2 起会在启动时按运行时版本校验插件的 dsh peer 范围，不满足的 bundle 会被
+  整体跳过（日志 `dsh: skipping profile bundle ...`）；0.2 的用户请使用本版本，
+  已在 dsh `0.2.0-rc.2` 的真实 web profile 上验证挂载、设置路由与客户端启动图。
+- 实际用到的运行时服务：`systemPrompt`（提示词段）、`webServer`（设置路由）；
+  客户端用到 `slots`、`locale`、`connection/reset`。
 - 与 [dsh-emoji](https://github.com/hellodigua/dsh-emoji) 可共存：提示词段名/排序不同（`dsh-emoji:guidance` @175 vs `dsh-kaomoji:guidance` @176），设置命名空间、RPC 通道、卡片槽位（插件页 vs 通用设置）均无冲突；颜文字是纯文本，dsh-emoji 的流转写只处理规范 Unicode emoji，不会互相改写。
 
 ## FAQ

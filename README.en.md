@@ -191,10 +191,15 @@ npm publish --access public --registry https://registry.npmjs.org
 
 ## Compatibility
 
-- Targets the npm `@deepseek-ai/dsh` rc.7 runtime line.
-- Peer deps: `@deepseek-ai/cordis`, `@deepseek-ai/dsh-system-prompt`, plus the
-  Web client peers (`dsh-client-*`, `react`) — all optional, provided by the
-  Web Profile shared runtime.
+- Works on both dsh `0.1.x` and `0.2.x` runtime lines: every
+  `@deepseek-ai/dsh-*` peer is declared as `^0.2.0-rc.2 || ^0.1.0-rc.7`
+  (optional peers, provided by the Web Profile shared runtime).
+- dsh 0.2 validates plugin dsh peers against the runtime version at boot and
+  skips bundles whose ranges do not match (`dsh: skipping profile bundle ...`);
+  use this release on 0.2 — verified against a real `0.2.0-rc.2` Web profile
+  (mount, settings route, client boot graph).
+- Runtime services actually used: `systemPrompt`, `webServer` (settings route);
+  the client half uses `slots`, `locale`, and `connection/reset`.
 - Coexists with [dsh-emoji](https://github.com/hellodigua/dsh-emoji): different
   prompt section names/orders (`dsh-emoji:guidance` @175 vs
   `dsh-kaomoji:guidance` @176), settings namespace, RPC channel, and card slot

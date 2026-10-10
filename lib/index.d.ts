@@ -1,7 +1,7 @@
 /**
  * dsh-kaomoji — 给 DeepSeek Harness (dsh) 回复自动添加日式颜文字。
  *
- * 纯提示词插件：零第三方运行时依赖，不需要 client 端或 webServer。
+ * 提示词插件：零第三方运行时依赖（只用 Node 标准库与 dsh 服务）；Host 侧注册设置路由，Web 端提供设置卡片。
  */
 
 export type KaomojiMode = "off" | "auto" | "frequent";
