@@ -8,7 +8,6 @@ import {
   DEFAULT_CONFIG,
   MODES,
   PLACEMENTS,
-  SETTINGS_RPC_CHANNEL,
   SECTION_NAME,
   SECTION_ORDER,
   apply,
@@ -98,206 +97,24 @@ test("customPrompt is appended without changing core rules", () => {
 });
 
 /** Minimal host ctx: captures the settings route and the prompt section. */
-function makeHostCtx() {
-  let route;
-  let section;
-  const ctx = {
-    emit() {},
-    effect(register) {
-      return register();
-    },
-    get() {
-      return undefined;
-    },
-    systemPrompt: {
-      section(value) {
-        section = value;
-        return () => {};
-      },
-    },
-    inject(services, register) {
-      if (Array.isArray(services) && services.includes("webServer")) {
-        register({
-          effect(callback) {
-            return callback();
-          },
-          webServer: {
-            register(value) {
-              route = value;
-              return () => {};
-            },
-          },
-        });
-      }
-    },
-  };
-  return { ctx, route: () => route, section: () => section };
-}
-
-/** Drive one POST through the captured settings route. */
-async function postSettings(route, body) {
-  const request = {
-    method: "POST",
-    async *[Symbol.asyncIterator]() {
-      yield Buffer.from(JSON.stringify(body));
-    },
-  };
-  let status;
-  let payload;
-  const response = {
-    writeHead(code) {
-      status = code;
-    },
-    end(text) {
-      payload = JSON.parse(text);
-    },
-  };
-  await route.handler(request, response);
-  return { status, payload };
-}
-
-test("apply registers exactly one system prompt section", () => {
-  const sections = [];
-  let route;
-  const dir = mkdtempSync(join(tmpdir(), "dsh-kaomoji-test-"));
-  const fakeCtx = {
-    logger: { info() {} },
-    emit() {},
-    effect(register, label) {
-      assert.equal(label, "dsh-kaomoji: guidance");
-      return register();
-    },
-    systemPrompt: {
-      section(section) {
-        sections.push(section);
-        return () => {};
-      },
-    },
-    inject(services, register) {
-      if (Array.isArray(services) && services.includes("webServer")) {
-        register({
-          effect(callback) {
-            return callback();
-          },
-          webServer: {
-            register(value) {
-              route = value;
-              return () => {};
-            },
-          },
-        });
-      }
-    },
-  };
-
-  try {
-    apply(fakeCtx, { mode: "frequent", placement: "end", settingsFile: join(dir, "state.json") });
-    assert.equal(sections.length, 1);
-    assert.equal(sections[0].name, SECTION_NAME);
-    assert.equal(sections[0].order, SECTION_ORDER);
-    assert.match(sections[0].text(), /In every conversational reply/);
-    assert.equal(route.kind, "exact");
-    assert.equal(route.path, SETTINGS_RPC_CHANNEL);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
+test("native config schema rejects invalid settings", async () => {
+  const { Config } = await import("../lib/index.js");
+  const value = Config({});
+  assert.equal(value.mode.get(), DEFAULT_CONFIG.mode);
+  for (const input of [{ mode: "bad" }, { placement: "bad" }, { maxPerTurn: 0 }, { maxPerTurn: 1.5 }, { maxPerTurn: 6 }, { customPrompt: "x".repeat(4001) }]) {
+    assert.throws(() => Config(input));
   }
 });
 
-test("mode off registers an empty section but keeps the settings RPC alive", async () => {
-  const dir = mkdtempSync(join(tmpdir(), "dsh-kaomoji-test-"));
-  const host = makeHostCtx();
-
-  try {
-    apply(host.ctx, { mode: "off", settingsFile: join(dir, "state.json") });
-    const section = host.section();
-    assert.ok(section);
-    assert.equal(section.text(), "");
-    assert.equal(host.route().path, SETTINGS_RPC_CHANNEL);
-
-    // 卡片可以在不重启的情况下把插件从 off 切回 frequent。
-    const initial = await postSettings(host.route(), { endpoint: "get", payload: {} });
-    assert.equal(initial.payload.ok, true);
-    const saved = await postSettings(host.route(), {
-      endpoint: "save",
-      payload: {
-        settings: { mode: "frequent", placement: "end", maxPerTurn: 1, customPrompt: "" },
-        expectedRevision: initial.payload.value.revision,
-      },
-    });
-    assert.equal(saved.payload.ok, true);
-    assert.match(section.text(), /In every conversational reply/);
-    assert.match(section.text(), /at the very end of the reply/);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
+test("manifest covers only the nine agreed Harness releases and uses native remotes", () => {
+  const pkg = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+  const releases = ["0.2.0-rc.2", ...[1,2,3,4,5].map(n => "0.2.1-alpha." + n), ...[1,2,3].map(n => "0.2.1-rc." + n)];
+  assert.deepEqual(pkg.engines.dsh.split(" || "), releases);
+  for (const [peer, range] of Object.entries(pkg.peerDependencies)) {
+    if (peer.startsWith("@deepseek-ai/dsh-")) assert.equal(range, pkg.engines.dsh);
   }
-});
-
-test("settings RPC rejects stale revisions and accepts reset", async () => {
-  const dir = mkdtempSync(join(tmpdir(), "dsh-kaomoji-test-"));
-  const host = makeHostCtx();
-
-  try {
-    apply(host.ctx, { mode: "auto", settingsFile: join(dir, "state.json") });
-    const before = (await postSettings(host.route(), { endpoint: "get", payload: {} })).payload;
-    const stale = (await postSettings(host.route(), {
-      endpoint: "save",
-      payload: {
-        settings: { mode: "frequent", placement: "end", maxPerTurn: 2, customPrompt: "" },
-        expectedRevision: before.value.revision + 9,
-      },
-    })).payload;
-    assert.equal(stale.ok, false);
-    assert.equal(stale.error.code, "settings-conflict");
-
-    const saved = (await postSettings(host.route(), {
-      endpoint: "save",
-      payload: {
-        settings: { mode: "frequent", placement: "end", maxPerTurn: 2, customPrompt: "少卖萌" },
-        expectedRevision: before.value.revision,
-      },
-    })).payload;
-    assert.equal(saved.ok, true);
-    assert.equal(saved.value.settings.mode, "frequent");
-    assert.equal(saved.value.settings.customPrompt, "少卖萌");
-
-    const reset = (await postSettings(host.route(), {
-      endpoint: "reset",
-      payload: { expectedRevision: saved.value.revision },
-    })).payload;
-    assert.equal(reset.ok, true);
-    assert.equal(reset.value.settings.mode, "auto");
-    assert.equal(reset.value.settings.customPrompt, "");
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
-});
-
-test("manifest declares 0.2-era dsh peers and no removed packages", () => {
-  const pkg = JSON.parse(
-    readFileSync(new URL("../package.json", import.meta.url), "utf8"),
-  );
-  const peers = pkg.peerDependencies ?? {};
-  for (const [peerName, range] of Object.entries(peers)) {
-    assert.ok(
-      !peerName.includes("dsh-client-runtime"),
-      `${peerName} was removed from dsh 0.2 and must not be declared`,
-    );
-    if (peerName.startsWith("@deepseek-ai/dsh-")) {
-      // dsh 0.2 启动时会用运行时版本校验这些范围（includePrerelease）；
-      // 0.1.x 与 0.2.x 两条运行时线都必须能加载。
-      assert.ok(range.includes("^0.2.0-rc.2"), `${peerName} must accept dsh 0.2`);
-      assert.ok(range.includes("^0.1.0-rc.7"), `${peerName} must keep dsh 0.1 support`);
-    }
-  }
-  const inject = pkg.dsh?.client?.inject ?? [];
-  assert.ok(inject.length > 0, "client inject list must not be empty");
-  for (const injected of inject) {
-    assert.ok(
-      !injected.includes("dsh-client-runtime"),
-      `${injected} was removed from dsh 0.2 and must not be injected`,
-    );
-    assert.ok(peers[injected], `dsh.client.inject entry ${injected} must be a declared peer`);
-  }
-  assert.equal(pkg.dsh?.manifestVersion, 1);
-  assert.equal(pkg.engines?.dsh, "^0.2.0-rc.2 || ^0.1.0-rc.7");
+  assert.equal(pkg.peerDependencies["@deepseek-ai/dsh-host-webserver"], undefined);
+  assert.ok(pkg.dsh.client.inject.includes("@deepseek-ai/dsh-api-remotes"));
+  for (const peer of pkg.dsh.client.inject) assert.ok(pkg.peerDependencies[peer]);
+  assert.equal(pkg.dsh.manifestVersion, 1);
 });

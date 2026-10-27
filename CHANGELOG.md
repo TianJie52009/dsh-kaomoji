@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0 — 2026-10-27
+
+- Replace private webServer HTTP settings routes with Harness native remote.settings and volatile Config fields.
+- Keep the Settings → General card in Web/Desktop and add retry after a failed request.
+- Import legacy JSON once per profile, preserve original files and newer native fields, retain migration state on reset.
+- Restrict compatibility to the nine published versions 0.2.0-rc.2 through 0.2.1-rc.3.
+- Add real-runtime compatibility tests, market version-sync tooling and per-project agent handoff.
+
+
 All notable changes to **dsh-kaomoji** are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/),

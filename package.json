@@ -1,6 +1,6 @@
 {
   "name": "dsh-kaomoji",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Add mood-aware Japanese kaomoji to DeepSeek Harness (dsh) replies; prompt-injection plugin with a curated library from kaomojiya.org.",
   "type": "module",
   "main": "lib/index.js",
@@ -23,7 +23,11 @@
     "cordis.patch.yml",
     "README.md",
     "README.en.md",
-    "LICENSE"
+    "LICENSE",
+    "scripts",
+    "sync-market.cmd",
+    "HANDOFF.md",
+    "COMPATIBILITY.md"
   ],
   "keywords": [
     "dsh",
@@ -49,12 +53,14 @@
   },
   "engines": {
     "node": "^22.19.0 || >=24.0.0",
-    "dsh": "^0.2.0-rc.2 || ^0.1.0-rc.7"
+    "dsh": "0.2.0-rc.2 || 0.2.1-alpha.1 || 0.2.1-alpha.2 || 0.2.1-alpha.3 || 0.2.1-alpha.4 || 0.2.1-alpha.5 || 0.2.1-rc.1 || 0.2.1-rc.2 || 0.2.1-rc.3"
   },
   "packageManager": "pnpm@11.7.0",
   "scripts": {
-    "test": "node --test test/plugin.test.mjs test/client.test.mjs",
-    "prepack": "npm test"
+    "test": "node --test test/*.test.mjs",
+    "prepack": "npm test",
+    "test:compat": "node scripts/test-compat.mjs",
+    "market:check": "node scripts/sync-market.mjs"
   },
   "dsh": {
     "manifestVersion": 1,
@@ -64,7 +70,7 @@
     "client": {
       "platform": "web",
       "inject": [
-        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-api-remotes",
         "@deepseek-ai/dsh-client-locale",
         "@deepseek-ai/dsh-client-ui-slots"
       ]
@@ -72,12 +78,14 @@
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.1",
-    "@deepseek-ai/dsh-client-connection": "^0.2.0-rc.2 || ^0.1.0-rc.7",
-    "@deepseek-ai/dsh-client-locale": "^0.2.0-rc.2 || ^0.1.0-rc.7",
-    "@deepseek-ai/dsh-client-ui-slots": "^0.2.0-rc.2 || ^0.1.0-rc.7",
-    "@deepseek-ai/dsh-host-webserver": "^0.2.0-rc.2 || ^0.1.0-rc.7",
-    "@deepseek-ai/dsh-system-prompt": "^0.2.0-rc.2 || ^0.1.0-rc.7",
-    "react": "^18.2.0"
+    "@deepseek-ai/dsh-client-connection": "0.2.0-rc.2 || 0.2.1-alpha.1 || 0.2.1-alpha.2 || 0.2.1-alpha.3 || 0.2.1-alpha.4 || 0.2.1-alpha.5 || 0.2.1-rc.1 || 0.2.1-rc.2 || 0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-locale": "0.2.0-rc.2 || 0.2.1-alpha.1 || 0.2.1-alpha.2 || 0.2.1-alpha.3 || 0.2.1-alpha.4 || 0.2.1-alpha.5 || 0.2.1-rc.1 || 0.2.1-rc.2 || 0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.0-rc.2 || 0.2.1-alpha.1 || 0.2.1-alpha.2 || 0.2.1-alpha.3 || 0.2.1-alpha.4 || 0.2.1-alpha.5 || 0.2.1-rc.1 || 0.2.1-rc.2 || 0.2.1-rc.3",
+    "@deepseek-ai/dsh-system-prompt": "0.2.0-rc.2 || 0.2.1-alpha.1 || 0.2.1-alpha.2 || 0.2.1-alpha.3 || 0.2.1-alpha.4 || 0.2.1-alpha.5 || 0.2.1-rc.1 || 0.2.1-rc.2 || 0.2.1-rc.3",
+    "react": "^18.2.0",
+    "@deepseek-ai/dsh-settings": "0.2.0-rc.2 || 0.2.1-alpha.1 || 0.2.1-alpha.2 || 0.2.1-alpha.3 || 0.2.1-alpha.4 || 0.2.1-alpha.5 || 0.2.1-rc.1 || 0.2.1-rc.2 || 0.2.1-rc.3",
+    "@deepseek-ai/dsh-app-boot": "0.2.0-rc.2 || 0.2.1-alpha.1 || 0.2.1-alpha.2 || 0.2.1-alpha.3 || 0.2.1-alpha.4 || 0.2.1-alpha.5 || 0.2.1-rc.1 || 0.2.1-rc.2 || 0.2.1-rc.3",
+    "@deepseek-ai/dsh-api-remotes": "0.2.0-rc.2 || 0.2.1-alpha.1 || 0.2.1-alpha.2 || 0.2.1-alpha.3 || 0.2.1-alpha.4 || 0.2.1-alpha.5 || 0.2.1-rc.1 || 0.2.1-rc.2 || 0.2.1-rc.3"
   },
   "peerDependenciesMeta": {
     "@deepseek-ai/cordis": {
@@ -92,14 +100,26 @@
     "@deepseek-ai/dsh-client-ui-slots": {
       "optional": true
     },
-    "@deepseek-ai/dsh-host-webserver": {
-      "optional": true
-    },
     "@deepseek-ai/dsh-system-prompt": {
       "optional": true
     },
     "react": {
       "optional": true
+    },
+    "@deepseek-ai/dsh-settings": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-app-boot": {
+      "optional": true
+    },
+    "@deepseek-ai/dsh-api-remotes": {
+      "optional": true
     }
+  },
+  "devDependencies": {
+    "@deepseek-ai/cosmokit": "~1.8.5"
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "~3.18.4"
   }
 }
