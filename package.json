@@ -25,8 +25,6 @@
     "README.en.md",
     "LICENSE",
     "scripts",
-    "sync-market.cmd",
-    "HANDOFF.md",
     "COMPATIBILITY.md"
   ],
   "keywords": [
@@ -59,8 +57,7 @@
   "scripts": {
     "test": "node --test test/*.test.mjs",
     "prepack": "npm test",
-    "test:compat": "node scripts/test-compat.mjs",
-    "market:check": "node scripts/sync-market.mjs"
+    "test:compat": "node scripts/test-compat.mjs"
   },
   "dsh": {
     "manifestVersion": 1,

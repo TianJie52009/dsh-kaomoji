@@ -1,5 +1,3 @@
-> 接手或维护本项目先读 [HANDOFF.md](./HANDOFF.md)。
-
 # dsh-kaomoji
 
 给 DeepSeek Harness 回复按情绪添加日式颜文字。通过系统提示词贡献规则，不改写模型流；词库见 [data/catalog.json](./data/catalog.json)。
@@ -64,15 +62,9 @@ npm pack --dry-run
 
 ## dsh-market 新版本同步
 
-仓库已经收录，新版本由市场目录的定时任务重新抓取 npm 元数据，不需要每次重复提交插件条目。发布到 npm 且推送 GitHub 后运行：
+仓库已经收录，新版本由市场目录的定时任务重新抓取 npm 元数据，不需要重复提交插件条目。
 
-```powershell
-.\sync-market.cmd
-# 发布满 24 小时后仍未同步，可显式请求上游刷新：
-.\sync-market.cmd --request-refresh
-```
-
-默认只检查 GitHub、npm latest、目录版本和发布日期；未同步返回退出码 2。请求刷新需要 `GH_TOKEN` 或 `GITHUB_TOKEN`，会先查重复请求，再在目录仓库创建 issue；不会自行修改上游目录或绕过等待期。市场自身的新包等待策略可能更长，脚本会输出发布日期供核对。
+维护者本地交接文档与 market 同步脚本位于两个项目共同的父目录：`HANDOFF-dsh-kaomoji.md`、`sync-market-dsh-kaomoji.cmd`，不随插件分发。脚本默认只读检查，显式加 `--request-refresh` 才会在满 24 小时且目录仍旧时请求上游重抓；需要 `GH_TOKEN` 或 `GITHUB_TOKEN`。
 
 [上游目录规则](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/blob/main/contributing.md) · [市场页面](https://awesome-dsh-plugin.com/p/TianJie52009/dsh-kaomoji/)
 

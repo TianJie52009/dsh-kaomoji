@@ -1,6 +1,6 @@
 # dsh-kaomoji
 
-Adds mood-aware Japanese kaomoji to DeepSeek Harness replies through a curated system-prompt contribution. See [Chinese documentation](./README.md), [compatibility evidence](./COMPATIBILITY.md), and [maintainer handoff](./HANDOFF.md).
+Adds mood-aware Japanese kaomoji to DeepSeek Harness replies through a curated system-prompt contribution. See [Chinese documentation](./README.md), [compatibility evidence](./COMPATIBILITY.md).
 
 ## Install
 
@@ -24,9 +24,7 @@ Run npm ci --legacy-peer-deps, npm test, npm run test:compat, then npm pack --dr
 
 ## Market synchronization
 
-The repository is already listed. The upstream catalog periodically probes npm versions. After publishing and pushing, run sync-market.cmd to compare GitHub, npm latest and the catalog. Exit code 2 means the catalog is pending. A new release can also be held by the market's fresh-release policy.
-
-After the release and repository are at least 24 hours old, sync-market.cmd --request-refresh can open a deduplicated upstream issue if the catalog is still stale. It requires GH_TOKEN or GITHUB_TOKEN. It does not bypass market policy or submit duplicate plugin entries.
+The repository is already listed; the upstream catalog periodically probes npm versions. Maintainer handoff and market synchronization scripts live in the local parent directory shared by the two projects, outside this package. The per-project entry points are HANDOFF-dsh-kaomoji.md and sync-market-dsh-kaomoji.cmd.
 
 ## License
 

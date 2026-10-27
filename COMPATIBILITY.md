@@ -26,7 +26,7 @@ These are official-package integration tests and ModuleLoader/store tests. Compl
 
 ## Release and market
 
-Release targets: GitHub tag v0.3.0 and npm latest 0.3.0. Use npm view dsh-kaomoji version to verify registry publication. sync-market.cmd checks the deployed catalog against this package version; catalog refresh and fresh-release installation policy are independent.
+Release targets: GitHub tag v0.3.0 and npm latest 0.3.0. Use npm view dsh-kaomoji version to verify registry publication. sync-market-dsh-kaomoji.cmd (in the local parent directory) checks the deployed catalog against this package version; catalog refresh and fresh-release installation policy are independent.
 
 ### Publication verified
 
@@ -35,4 +35,4 @@ Release targets: GitHub tag v0.3.0 and npm latest 0.3.0. Use npm view dsh-kaomoj
 - Registry tarball integrity verified and bytes match the reviewed local artifact.
 - 24 unit tests and 9 real-runtime integrations passed for this project.
 - Catalog currently reports 0.2.1; the 0.3.0 catalog refresh is pending.
-- Release reaches 24h at 2026/10/28 13:25:49 (Asia/Shanghai). Run sync-market.cmd again then; --request-refresh is optional if the catalog stays stale.
+- Release reaches 24h at 2026/10/28 13:25:49 (Asia/Shanghai). Run sync-market-dsh-kaomoji.cmd (in the local parent directory) again then; --request-refresh is optional if the catalog stays stale.
